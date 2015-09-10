@@ -1,0 +1,71 @@
+<!DOCTYPE>
+<html>
+<head ng-app="lolApp">
+	<title>Test Page</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.min.js"></script>
+	<style>
+		.container {
+			border: 1px solid black;
+			border-radius: 10px;
+			margin-top: 10px;
+		}
+	</style>
+</head>
+	<body ng-controller="lolController">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12 text-center">
+					<div class="input-group">
+						<input type="text" class="form-control" ng-model="summonerSearch">
+						<span class="input-group-btn">
+							<button class="btn btn-primary" ng-click="summonerSubmit()">Search</button>
+						</span>
+					</div>
+					{{summonerID}}
+					<div style="height: 500px; border: 1px solid pink;" ng-show="summonerInfo"></div>
+					{{summonerInfo}}
+
+				</div>
+				<div class="col-md-4 text-center" ng-repeat="champion in champJson.data">
+					<div class="col-md-12">
+						<h3>{{champion.name}}<h3>
+						<img src="{{profileImageUrl + champion.image.full}}" />
+					</div>
+					<div class="col-md-3" ng-repeat="spell in champion.spells">
+						<img class="img-responsive" src="{{spellsImageUrl + spell.image.full}}" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<script>
+			var app = angular.module('lolApp', []);
+
+			app.controller('lolController', function($scope, $http) {
+				$http.get('https://global.api.pvp.net/api/lol/static-data/na/v1.2/champion?champData=all&api_key=b322dc6d-0fcf-4484-9fc3-a9a902a32274').success(function(response){
+					$scope.champJson = response;
+				});
+
+				$http.get('https://global.api.pvp.net/api/lol/static-data/na/v1.2/champion?champData=all&api_key=b322dc6d-0fcf-4484-9fc3-a9a902a32274').success(function(response){
+					$scope.champJson = response;
+				});
+
+				$scope.profileImageUrl = 'http://ddragon.leagueoflegends.com/cdn/5.15.1/img/champion/';
+				$scope.spellsImageUrl = 'http://ddragon.leagueoflegends.com/cdn/5.15.1/img/spell/';
+
+				$scope.summonerSubmit = function() {
+					$http.get('https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/' + $scope.summonerSearch + '?api_key=b322dc6d-0fcf-4484-9fc3-a9a902a32274')
+					.success(function(response) {	
+						angular.forEach(response, function(value, key) {
+							$scope.summonerID = value.id;
+						});
+						$http.get('https://na.api.pvp.net/api/lol/na/v2.2/matchhistory/' + $scope.summonerID + '?api_key=b322dc6d-0fcf-4484-9fc3-a9a902a32274')
+						.success(function(response) {	
+							$scope.summonerInfo = response;
+						});
+					});
+				};
+			});
+		</script>
+	</body>
+</html>
